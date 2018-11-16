@@ -2,6 +2,8 @@
 
 set -e
 
+credentials_file="credentials.txt"
+token=$(cat "$credentials_file")
 release_json_file="$1"
 
 function is_branch_clean() {
@@ -31,7 +33,7 @@ function is_json_valid() {
 }
 
 function check_prerequisites() {
-	is_branch_clean && is_json_provided && is_json_valid
+	is_json_provided && is_json_valid
 }
 
 function merge_master_to_release() {
@@ -56,12 +58,12 @@ function push() {
 
 function draft_release() {
 	echo 'Creating release draft'
-	curl -d "$release_json_file" -X POST https://api.github.com/repos/AleLudovici/release_automation/releases
+	curl -H "Authorization: token $token" -d "@$release_json_file" https://api.github.com/repos/AleLudovici/release_automation/releases
 }
 
 if check_prerequisites; then
-  merge_master_to_release
-  build
-  push
-  draft_release
+	merge_master_to_release
+  	build
+  	push
+  	draft_release
 fi
