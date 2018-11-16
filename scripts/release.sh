@@ -17,7 +17,7 @@ function push() {
 	git push origin release
 }
 
-if [ -z "$(git status --porcelain)" ]; then 
+if output=$(git status --porcelain) && [ -z "$output" ]; then
   # Working directory clean
   merge_master_to_release
   build
