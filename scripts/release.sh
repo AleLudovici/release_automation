@@ -14,10 +14,10 @@ function is_branch_clean() {
 }
 
 function is_json_provided() {
-	if [ -n "$release_json_file" ]; then 
+	if [ -n "$release_json_file" ] && [[ $release_json_file =~ ([a-zA-Z0-9\s_\\.\-\(\):])+(.json)$ ]]; then
 	  	true
 	else
-		echo 'Please provite the json file to draft the release.'
+		echo 'Please provide a json file to draft the release.'
 		false
 	fi
 }
@@ -58,11 +58,9 @@ function draft_release() {
 	echo 'Creating release draft'
 }
 
-# check_prerequisites
-# retval=$?
 if check_prerequisites; then
-  # merge_master_to_release
-  # build
-  # push
+  merge_master_to_release
+  build
+  push
   draft_release
 fi
