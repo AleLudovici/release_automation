@@ -56,6 +56,7 @@ function push() {
 
 function draft_release() {
 	echo 'Creating release draft'
+	curl -d "$release_json_file" -X POST https://api.github.com/repos/AleLudovici/release_automation/releases
 }
 
 if check_prerequisites; then
