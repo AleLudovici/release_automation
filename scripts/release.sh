@@ -4,22 +4,34 @@ set -e
 
 release_json_file="$1"
 
-function check_prerequisites() {
+function is_branch_clean() {
 	if output=$(git status --porcelain) && [ -z "$output" ]; then
-	  # Working directory clean
-	  if [ -z $release_json_file ]; then 
-	  	retval=0
-	  else
-	  	echo 'Please provite the json file to draft the release.'
-	  	retval=1
-	  fi
+		true
 	else 
-	  # Uncommitted changes
-	  echo 'You have uncommitted changes. Please commit them before releasing.'
-	  retval=1
+	  	echo 'You have uncommitted changes. Please commit them before releasing.'
+	  	false
 	fi
+}
 
-	return "$retval"
+function is_json_provided() {
+	if [ -n "$release_json_file" ] && [[ $release_json_file =~ ([a-zA-Z0-9\s_\\.\-\(\):])+(.json)$ ]]; then
+	  	true
+	else
+		echo 'Please provide a json file to draft the release.'
+		false
+	fi
+}
+
+function is_json_valid() {
+	if validation=$(python -mjson.tool "$release_json_file" > /dev/null) && [ -z "$validation" ]; then 
+	  	true
+	 else
+	  	false
+	 fi
+}
+
+function check_prerequisites() {
+	is_branch_clean && is_json_provided && is_json_valid
 }
 
 function merge_master_to_release() {
@@ -46,9 +58,7 @@ function draft_release() {
 	echo 'Creating release draft'
 }
 
-check_prerequisites
-retval=$?
-if [ "$retval" == 0 ]; then
+if check_prerequisites; then
   merge_master_to_release
   build
   push
