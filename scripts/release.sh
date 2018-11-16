@@ -7,7 +7,12 @@ release_json_file="$1"
 function check_prerequisites() {
 	if output=$(git status --porcelain) && [ -z "$output" ]; then
 	  # Working directory clean
-	  retval=0
+	  if [ -z $release_json_file ]; then 
+	  	retval=0
+	  else
+	  	echo 'Please provite the json file to draft the release.'
+	  	retval=1
+	  fi
 	else 
 	  # Uncommitted changes
 	  echo 'You have uncommitted changes. Please commit them before releasing.'
