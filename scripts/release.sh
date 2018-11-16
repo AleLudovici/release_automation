@@ -2,6 +2,21 @@
 
 set -e
 
+release_json_file="$1"
+
+function check_prerequisites() {
+	if output=$(git status --porcelain) && [ -z "$output" ]; then
+	  # Working directory clean
+	  retval=0
+	else 
+	  # Uncommitted changes
+	  echo 'You have uncommitted changes. Please commit them before releasing.'
+	  retval=1
+	fi
+
+	return "$retval"
+}
+
 function merge_master_to_release() {
 	git checkout master &&
 	git pull &&
@@ -22,14 +37,15 @@ function push() {
 	git push origin release
 }
 
-if output=$(git status --porcelain) && [ -z "$output" ]; then
-  # Working directory clean
+function draft_release() {
+	echo 'Creating release draft'
+}
+
+check_prerequisites
+retval=$?
+if [ "$retval" == 0 ]; then
   merge_master_to_release
   build
   push
-else 
-  # Uncommitted changes
-  echo 'You have uncommitted changes. Please commit them before releasing.'
+  draft_release
 fi
-
-
