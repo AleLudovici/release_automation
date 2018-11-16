@@ -10,7 +10,12 @@ function merge_master_to_release() {
 }
 
 function build() {
-	echo 'building...'
+	echo 'Building project...'
+	xcodebuild clean build \
+	-project release\ automation.xcodeproj \
+	-UseModernBuildSystem=NO \
+	-sdk iphonesimulator \
+	-destination "name=iPhone 8"
 }
 
 function push() {
