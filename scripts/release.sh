@@ -7,7 +7,13 @@ release_json_file="$1"
 function check_prerequisites() {
 	if output=$(git status --porcelain) && [ -z "$output" ]; then
 	  # Working directory clean
-	  retval=0
+	  if validation=$(python -mjson.tool "$release_json_file" > /dev/null) && [ -z "$validation" ]; then 
+	  	echo $release_json_file
+	  	retval=0
+	  else
+	  	echo 'Please provite the json file to draft the release.'
+	  	retval=1
+	  fi
 	else 
 	  # Uncommitted changes
 	  echo 'You have uncommitted changes. Please commit them before releasing.'
@@ -44,8 +50,8 @@ function draft_release() {
 check_prerequisites
 retval=$?
 if [ "$retval" == 0 ]; then
-  merge_master_to_release
-  build
-  push
+  # merge_master_to_release
+  # build
+  # push
   draft_release
 fi
