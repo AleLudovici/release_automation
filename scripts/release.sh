@@ -2,9 +2,20 @@
 
 set -e
 
+version=$( /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' release\ automation/Info.plist )
+
 credentials_file="credentials.txt"
 token=$(cat "$credentials_file")
-release_json_file="$1"
+
+release_json="{
+ \"tag_name\": \"v$version\",
+ \"target_commitish\": \"release\",
+ \"name\": \"v$version\",
+ \"body\": \"Description of the release\",
+ \"draft\": true,
+ \"prerelease\": false
+}"
+
 
 function is_branch_clean() {
 	if output=$(git status --porcelain) && [ -z "$output" ]; then
@@ -15,17 +26,8 @@ function is_branch_clean() {
 	fi
 }
 
-function is_json_provided() {
-	if [ -n "$release_json_file" ] && [[ $release_json_file =~ ([a-zA-Z0-9\s_\\.\-\(\):])+(.json)$ ]]; then
-	  	true
-	else
-		echo 'Please provide a json file to draft the release.'
-		false
-	fi
-}
-
 function is_json_valid() {
-	if validation=$(python -mjson.tool "$release_json_file" > /dev/null) && [ -z "$validation" ]; then 
+	if validation=$(echo "$release_json" | python -m json.tool  > /dev/null) && [ -z "$validation" ]; then 
 	  	true
 	 else
 	  	false
@@ -33,7 +35,7 @@ function is_json_valid() {
 }
 
 function check_prerequisites() {
-	is_json_provided && is_json_valid
+	is_branch_clean && is_json_valid
 }
 
 function merge_master_to_release() {
@@ -58,7 +60,7 @@ function push() {
 
 function draft_release() {
 	echo 'Creating release draft'
-	curl -H "Authorization: token $token" -d "@$release_json_file" https://api.github.com/repos/AleLudovici/release_automation/releases
+	curl -H "Authorization: token $token" -d "$release_json" https://api.github.com/repos/AleLudovici/release_automation/releases
 }
 
 if check_prerequisites; then

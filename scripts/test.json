@@ -1,8 +1,0 @@
-{
-  "tag_name": "v1.0.0",
-  "target_commitish": "release",
-  "name": "v1.0.0",
-  "body": "Description of the release",
-  "draft": true,
-  "prerelease": false
-}
