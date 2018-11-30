@@ -1,15 +1,18 @@
 import os
 import re
 import subprocess
+import requests
+
 
 def __run_cmd(cmd):
-    cmds = []
+    cmds = list()
     cmds.append('bash')
     cmds.append('-c')
     cmds.append(cmd)
 
     environment = os.environ.copy()
     return subprocess.check_output(cmds, env=environment)
+
 
 def __last_two_tags():
     cmd = "git tag --sort -version:refname | head -n 2"
@@ -23,7 +26,7 @@ def __last_two_tags():
 
 def __commit_with_pr_number(compiled_re, commit):
     match = compiled_re.search(commit)
-    return match.group(0) if match is not None else None
+    return match.group(0).strip('#') if match is not None else None
 
 
 def __release_merge_commits(previous_tag, current_tag):
@@ -36,14 +39,29 @@ def __release_merge_commits(previous_tag, current_tag):
     regex_pr_number = r'(#[0-9])\w+'
     compiled_re = re.compile(regex_pr_number)
     pr_commits = map(lambda commit: __commit_with_pr_number(compiled_re, commit), commits)
-    return list(pr_commits)
+    return list(filter(lambda id: id is not None, pr_commits))
 
 
+def __fetch_pull_request(pr_number, credentials_file='../credentials.txt'):
+    token = open(credentials_file, 'r').read()
+    payload = {'Authorization: token': token}
+    url = "https://api.github.com/repos/AleLudovici/release_automation/pulls/{}".format(pr_number)
+    return requests.get(url, params=payload)
+
+
+def __pull_request_details(pull_requests_numbers):
+    details = list()
+    for number in pull_requests_numbers:
+        result = __fetch_pull_request(number)
+        if result.status_code == 200:
+            response_json = result.json()
+            title = response_json['title']
+            labels = response_json['labels']
+            details.append((title, labels))
+
+    return details
 
 # def fetch_closed_issues(credentials_file: str):
-#     token = open(credentials_file, 'r').read()
-#     payload = {'Authorization: token': token, 'state': 'closed'}
-#     return requests.get("https://api.github.com/repos/AleLudovici/release_automation/issues", params=payload)
 #
 #
 # def fetch_closed_pull_requests(credentials_file: str):
