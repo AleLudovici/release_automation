@@ -14,7 +14,7 @@ def __run_cmd(cmd):
     return subprocess.check_output(cmds, env=environment)
 
 
-def __last_two_tags():
+def _last_two_tags():
     cmd = "git tag --sort -version:refname | head -n 2"
 
     # Last 2 tags
@@ -29,29 +29,28 @@ def __commit_with_pr_number(compiled_re, commit):
     return match.group(0).strip('#') if match is not None else None
 
 
-def __release_merge_commits(previous_tag, current_tag):
+def _release_merge_commits(previous_tag, current_tag):
     # %s selects "subject" via the Git formatting args (https://git-scm.com/docs/pretty-formats)
     cmd = "git log {}..{} --merges --pretty=format:'%s'".format(previous_tag, current_tag)
     output = __run_cmd(cmd)
     commits = output.decode("utf-8").split('\n')
-
     # only merge commits from pull requests
-    regex_pr_number = r'(#[0-9])\w+'
+    regex_pr_number = r'#\d+'
     compiled_re = re.compile(regex_pr_number)
     pr_commits = map(lambda commit: __commit_with_pr_number(compiled_re, commit), commits)
     return list(filter(lambda id: id is not None, pr_commits))
 
 
-def __fetch_pull_request(pr_number, credentials_file='../credentials.txt'):
+def __fetch_pull_request(pr_number, credentials_file='credentials.txt'):
     token = open(credentials_file, 'r').read()
     payload = {'Authorization: token': token}
     url = "https://api.github.com/repos/AleLudovici/release_automation/pulls/{}".format(pr_number)
     return requests.get(url, params=payload)
 
 
-def __pull_request_details(pull_requests_numbers):
+def _pull_request_details(pr_numbers):
     details = list()
-    for number in pull_requests_numbers:
+    for number in pr_numbers:
         result = __fetch_pull_request(number)
         if result.status_code == 200:
             response_json = result.json()
@@ -61,24 +60,10 @@ def __pull_request_details(pull_requests_numbers):
 
     return details
 
-# def fetch_closed_issues(credentials_file: str):
-#
-#
-# def fetch_closed_pull_requests(credentials_file: str):
-#     closed_issues_response = fetch_closed_issues(credentials_file)
-#     if closed_issues_response.status_code == 200:
-#         closed_issues = closed_issues_response.json()
-#         pull_requests_filter = filter(lambda issue: issue['state'] == 'closed', closed_issues)
-#         pull_requests = list(pull_requests_filter)
-#         print('There are %s pull requests', len(pull_requests))
-#         return pull_requests
-#     else:
-#         return None
 
-# tags = __last_two_tags()
-print(__release_merge_commits('7.12.0', '7.13.0'))
-# TODO: Get PR details
-
-
-
-# TODO: Filter PRs containing merge_commit_sha
+tags = _last_two_tags()
+print(tags)
+pull_requests_numbers = _release_merge_commits(tags[1], tags[0])
+print(pull_requests_numbers)
+pull_requests_details = _pull_request_details(pull_requests_numbers)
+print(pull_requests_details)
