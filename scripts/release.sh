@@ -55,7 +55,8 @@ function tag() {
     git push origin "$version"
 }
 
-function changelog() {
+function draft_release() {
+	echo 'Creating release draft'
 	python scripts/changelog.py
 	body=$(cat "changelog.txt")
     release_json="{
@@ -66,12 +67,6 @@ function changelog() {
      \"draft\": true,
      \"prerelease\": false
     }"
-    release_json
-}
-
-function draft_release() {
-	echo 'Creating release draft'
-	release_json=changechangelog()
 	curl -H "Authorization: token $token" -d "$release_json" https://api.github.com/repos/AleLudovici/release_automation/releases
 }
 
