@@ -65,9 +65,22 @@ def _pull_request_details(pr_numbers):
     return dict(details)
 
 
-tags = _last_two_tags()
-print(tags)
-pull_requests_numbers = _release_merge_commits(tags[1], tags[0])
-print(pull_requests_numbers)
-pull_requests_details = _pull_request_details(pull_requests_numbers)
-print(pull_requests_details)
+def create_changelog():
+    print('creating changelog...')
+    tags = _last_two_tags()
+    print(tags)
+    pull_requests_numbers = _release_merge_commits(tags[1], tags[0])
+    print(pull_requests_numbers)
+    pull_requests_details = _pull_request_details(pull_requests_numbers)
+    print(pull_requests_details)
+
+    changelog_file = open('changelog.txt', 'w')
+    for key, value in pull_requests_details.items():
+        changelog_file.write('{}\n'.format(key))
+        changes = '\n'.join(value)
+        changelog_file.write('{}\n'.format(changes))
+        changelog_file.write('\n')
+    changelog_file.close()
+
+
+create_changelog()
