@@ -58,6 +58,11 @@ function push() {
 	git push origin release
 }
 
+function tag() {
+    git tag version
+    git push origin version
+}
+
 function draft_release() {
 	echo 'Creating release draft'
 	curl -H "Authorization: token $token" -d "$release_json" https://api.github.com/repos/AleLudovici/release_automation/releases
@@ -67,5 +72,6 @@ if check_prerequisites; then
 	merge_master_to_release
   	build
   	push
+  	tag
   	draft_release
 fi
