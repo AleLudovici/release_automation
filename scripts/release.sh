@@ -59,8 +59,8 @@ function push() {
 }
 
 function tag() {
-    git tag version
-    git push origin version
+    git tag "$version"
+    git push origin "$version"
 }
 
 function draft_release() {
