@@ -1,6 +1,8 @@
 import os
 import re
 import subprocess
+from collections import defaultdict
+
 import requests
 
 
@@ -49,16 +51,18 @@ def __fetch_pull_request(pr_number, credentials_file='credentials.txt'):
 
 
 def _pull_request_details(pr_numbers):
-    details = list()
+    details = defaultdict(list)
     for number in pr_numbers:
         result = __fetch_pull_request(number)
         if result.status_code == 200:
             response_json = result.json()
             title = response_json['title']
-            labels = response_json['labels']
-            details.append((title, labels))
+            label_titles = list(map(lambda l: l['name'], response_json['labels']))
+            label = label_titles[0] if label_titles else None
+            if label is not None:
+                details[label].append(title)
 
-    return details
+    return dict(details)
 
 
 tags = _last_two_tags()
