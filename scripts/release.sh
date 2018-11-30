@@ -7,11 +7,14 @@ version=$( /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' release
 credentials_file="credentials.txt"
 token=$(cat "$credentials_file")
 
+changelog_file="changelog.txt"
+changelog=$(cat "changelog_file")
+
 release_json="{
  \"tag_name\": \"v$version\",
  \"target_commitish\": \"release\",
  \"name\": \"v$version\",
- \"body\": \"Description of the release\",
+ \"body\": \"$changelog\",
  \"draft\": true,
  \"prerelease\": false
 }"
@@ -35,7 +38,7 @@ function is_json_valid() {
 }
 
 function check_prerequisites() {
-	is_branch_clean && is_json_valid
+	is_branch_clean
 }
 
 function merge_master_to_release() {
@@ -65,7 +68,10 @@ function tag() {
 
 function draft_release() {
 	echo 'Creating release draft'
-	curl -H "Authorization: token $token" -d "$release_json" https://api.github.com/repos/AleLudovici/release_automation/releases
+	$(python chagelog.py)
+	body=$(cat "$credentials_file")
+	if is_json_valid: then
+	    curl -H "Authorization: token $token" -d "$release_json" https://api.github.com/repos/AleLudovici/release_automation/releases
 }
 
 if check_prerequisites; then
