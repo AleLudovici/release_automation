@@ -97,9 +97,9 @@ def _create_changelog():
 
     changelog = ''
     for key, value in pull_requests_details.items():
-        changelog += '{}/\n'.format(key)
-        changes = '/\n'.join(value)
-        changelog += '{}/\n'.format(changes)
+        changelog += '{}\n'.format(key)
+        changes = '\n'.join(value)
+        changelog += '{}\n'.format(changes)
 
     return changelog
 
