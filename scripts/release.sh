@@ -60,9 +60,9 @@ function draft_release() {
 }
 
 if check_prerequisites; then
-#	merge_master_to_release
-#  	build
-#  	push
-#  	tag
+	merge_master_to_release
+ 	build
+ 	push
+ 	tag
   	draft_release
 fi
