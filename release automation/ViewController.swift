@@ -10,11 +10,14 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    let a = "Bug fix"
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
 
         // simple change to open PR
+        let f = "a feature"
     }
 
 
