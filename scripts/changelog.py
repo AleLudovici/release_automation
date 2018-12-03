@@ -1,9 +1,32 @@
 import os
+import sys
 import re
 import subprocess
+import json
+import requests
+import logging
 from collections import defaultdict
 
-import requests
+
+version = sys.argv[1]
+token = sys.argv[2]
+debug = sys.argv[3] if len(sys.argv) == 4 else None
+
+
+def __setup_debug():
+    try:
+        import http.client as http_client
+    except ImportError:
+        # Python 2
+        import httplib as http_client
+
+    http_client.HTTPConnection.debuglevel = 1
+
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
 
 
 def __run_cmd(cmd):
@@ -43,8 +66,7 @@ def _release_merge_commits(previous_tag, current_tag):
     return list(filter(lambda id: id is not None, pr_commits))
 
 
-def __fetch_pull_request(pr_number, credentials_file='credentials.txt'):
-    token = open(credentials_file, 'r').read()
+def __fetch_pull_request(pr_number):
     payload = {'Authorization: token': token}
     url = "https://api.github.com/repos/AleLudovici/release_automation/pulls/{}".format(pr_number)
     return requests.get(url, params=payload)
@@ -65,22 +87,45 @@ def _pull_request_details(pr_numbers):
     return dict(details)
 
 
-def create_changelog():
+def _create_changelog():
     print('creating changelog...')
+
     tags = _last_two_tags()
-    print(tags)
     pull_requests_numbers = _release_merge_commits(tags[1], tags[0])
-    print(pull_requests_numbers)
     pull_requests_details = _pull_request_details(pull_requests_numbers)
-    print(pull_requests_details)
 
-    changelog_file = open('changelog.txt', 'w')
+    changelog = ''
     for key, value in pull_requests_details.items():
-        changelog_file.write('{}\n'.format(key))
-        changes = '\n'.join(value)
-        changelog_file.write('{}\n'.format(changes))
-        changelog_file.write('\n')
-    changelog_file.close()
+        changelog += '{}/\n'.format(key)
+        changes = '/\n'.join(value)
+        changelog += '{}/\n'.format(changes)
+
+    return changelog
 
 
-create_changelog()
+def draft_release():
+    if debug == '-d':
+        __setup_debug()
+
+    print('Creating release draft {}'.format(version))
+
+    changelog = _create_changelog()
+
+    release_json_data = {'tag_name': version,
+                         'target_commitish': 'release',
+                         'name': version,
+                         'body': changelog,
+                         'draft': True,
+                         'prerelease': False}
+
+    payload = {'Authorization: token': token}
+    url = "https://api.github.com/repos/AleLudovici/release_automation/releases"
+    response = requests.post(url, json=json.dumps(release_json_data), params=payload)
+
+    if response.status_code == 201:
+        print('release draft created successfully')
+    else:
+        print('release draft failed with {}'.format(response.status_code, response.reason))
+
+
+draft_release()
