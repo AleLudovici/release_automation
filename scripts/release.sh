@@ -26,7 +26,8 @@ function is_json_valid() {
 }
 
 function check_prerequisites() {
-	is_branch_clean
+#	is_branch_clean
+    true
 }
 
 function merge_master_to_release() {
@@ -59,9 +60,9 @@ function draft_release() {
 }
 
 if check_prerequisites; then
-	merge_master_to_release
- 	build
- 	push
- 	tag
+#	merge_master_to_release
+# 	build
+# 	push
+# 	tag
   	draft_release
 fi
