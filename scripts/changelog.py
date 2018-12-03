@@ -68,8 +68,9 @@ def _release_merge_commits(previous_tag, current_tag):
 
 
 def __fetch_pull_request(pr_number):
+    payload = {'Authorization: token': token}
     url = "https://api.github.com/repos/AleLudovici/release_automation/pulls/{}".format(pr_number)
-    return requests.get(url, header=auth_headers)
+    return requests.get(url, params=payload)
 
 
 def _pull_request_details(pr_numbers):
