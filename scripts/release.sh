@@ -26,8 +26,7 @@ function is_json_valid() {
 }
 
 function check_prerequisites() {
-#	is_branch_clean
-    true
+	is_branch_clean
 }
 
 function merge_master_to_release() {

@@ -2,7 +2,6 @@ import os
 import sys
 import re
 import subprocess
-import json
 import requests
 import logging
 from collections import defaultdict
@@ -111,16 +110,18 @@ def draft_release():
 
     changelog = _create_changelog()
 
-    release_json_data = {'tag_name': version,
-                         'target_commitish': 'release',
-                         'name': version,
-                         'body': changelog,
-                         'draft': True,
-                         'prerelease': False}
+    release_json = {
+        'tag_name': version,
+        'target_commitish': 'release',
+        'name': version,
+        'body': changelog,
+        'draft': True,
+        'prerelease': False
+    }
 
     payload = {'Authorization: token': token}
     url = "https://api.github.com/repos/AleLudovici/release_automation/releases"
-    response = requests.post(url, json=json.dumps(release_json_data), params=payload)
+    response = requests.post(url, json=release_json, params=payload)
 
     if response.status_code == 201:
         print('release draft created successfully')
