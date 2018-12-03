@@ -6,8 +6,7 @@ version=$( /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' release
 
 credentials_file="credentials.txt"
 token=$(cat "$credentials_file")
-
-
+debug=$1
 
 function is_branch_clean() {
 	if output=$(git status --porcelain) && [ -z "$output" ]; then
@@ -27,7 +26,8 @@ function is_json_valid() {
 }
 
 function check_prerequisites() {
-	is_branch_clean
+#	is_branch_clean
+    true
 }
 
 function merge_master_to_release() {
@@ -56,22 +56,7 @@ function tag() {
 }
 
 function draft_release() {
-	echo 'Creating release draft'
-
-#	python scripts/changelog.py
-	body=$(cat "changelog.txt")
-    release_json="{
-     \"tag_name\": \"$version\",
-     \"target_commitish\": \"release\",
-     \"name\": \"$version\",
-     \"body\": \"$body\",
-     \"draft\": true,
-     \"prerelease\": false
-    }"
-
-    if is_json_valid release_json; then
-	    curl -H "Authorization: token $token" -d "$release_json" https://api.github.com/repos/AleLudovici/release_automation/releases
-	fi
+    python scripts/changelog.py "$version" "$token" "$debug"
 }
 
 if check_prerequisites; then
