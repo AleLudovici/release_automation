@@ -11,6 +11,8 @@ version = sys.argv[1]
 token = sys.argv[2]
 debug = sys.argv[3] if len(sys.argv) == 4 else None
 
+auth_headers = {"Authorization": "token %s" % token}
+
 
 def __setup_debug():
     try:
@@ -66,9 +68,8 @@ def _release_merge_commits(previous_tag, current_tag):
 
 
 def __fetch_pull_request(pr_number):
-    payload = {'Authorization: token': token}
     url = "https://api.github.com/repos/AleLudovici/release_automation/pulls/{}".format(pr_number)
-    return requests.get(url, params=payload)
+    return requests.get(url, header=auth_headers)
 
 
 def _pull_request_details(pr_numbers):
@@ -119,9 +120,8 @@ def draft_release():
         'prerelease': False
     }
 
-    payload = {'Authorization: token': token}
     url = "https://api.github.com/repos/AleLudovici/release_automation/releases"
-    response = requests.post(url, json=release_json, params=payload)
+    response = requests.post(url, headers=auth_headers, json=release_json)
 
     if response.status_code == 201:
         print('release draft created successfully')
