@@ -50,3 +50,5 @@ venv/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
+_pycache__/
+scripts/__pycache__/

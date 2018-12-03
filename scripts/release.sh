@@ -57,23 +57,27 @@ function tag() {
 
 function draft_release() {
 	echo 'Creating release draft'
-	python scripts/changelog.py
+
+#	python scripts/changelog.py
 	body=$(cat "changelog.txt")
     release_json="{
-     \"tag_name\": \"v$version\",
+     \"tag_name\": \"$version\",
      \"target_commitish\": \"release\",
-     \"name\": \"v$version\",
+     \"name\": \"$version\",
      \"body\": \"$body\",
      \"draft\": true,
      \"prerelease\": false
     }"
-	curl -H "Authorization: token $token" -d "$release_json" https://api.github.com/repos/AleLudovici/release_automation/releases
+
+    if is_json_valid release_json; then
+	    curl -H "Authorization: token $token" -d "$release_json" https://api.github.com/repos/AleLudovici/release_automation/releases
+	fi
 }
 
 if check_prerequisites; then
-	merge_master_to_release
-  	build
-  	push
-  	tag
+#	merge_master_to_release
+#  	build
+#  	push
+#  	tag
   	draft_release
 fi
